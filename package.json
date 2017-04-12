@@ -1,0 +1,33 @@
+{
+  "name": "webpack-detective",
+  "version": "1.0.0",
+  "description": "A Progressive Web App that helps you analyze the stats output from webpack",
+  "main": "index.js",
+  "repository": "https://github.com/DrewML/webpack-detective",
+  "author": "Andrew Levine",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack-dev-server",
+    "flow": "flow check"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^6.4.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-classes": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-react": "^6.24.1",
+    "flow-bin": "^0.43.1",
+    "html-webpack-plugin": "^2.28.0",
+    "webpack": "^2.3.3",
+    "webpack-dev-server": "^2.4.2"
+  },
+  "dependencies": {
+    "material-ui": "^0.17.3",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4",
+    "react-router": "^3",
+    "react-tap-event-plugin": "^2.0.1"
+  }
+}
