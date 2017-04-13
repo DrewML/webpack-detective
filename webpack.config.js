@@ -13,7 +13,7 @@ module.exports = () => {
             path: join(__dirname, 'dist'),
             filename: '[name].js'
         },
-        devtool: isProd ? 'source-map' : 'eval',
+        devtool: isProd ? 'source-map' : 'eval-source-map',
         module: {
             rules: [{
                 test: /\.js$/,

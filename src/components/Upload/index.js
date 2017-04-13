@@ -2,22 +2,67 @@
 import React, { Component } from 'react';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
+import TextField from 'material-ui/TextField';
 import { browserHistory } from 'react-router';
+import { connect } from 'react-redux';
+import { loadStats } from '../../reducers/stats';
+import { getJSONFile } from '../../util/download';
+import type { Stats } from '../../types/webpack';
 
-export default class Upload extends Component {
+class Upload extends Component {
     props: {
-        // TODO: Create type for webpack stats object shape
-        onFileUpload: (payload: Object) => void;
+        onFileUpload: (payload: Stats) => void;
     };
+
+    fileUploadNode: HTMLInputElement;
 
     timeoutHandle: number;
 
-    state: { currentError: string } = {
-        currentError: ''
+    state: {
+        currentError: string;
+        uri: string;
+    } = {
+        currentError: '',
+        uri: ''
     };
 
-    processUpload = () => {
-        console.log('upload');
+    processUpload = (stats: Stats) => {
+        this.props.onFileUpload(stats);
+        browserHistory.push('/');
+    };
+
+    importLocalFile = () => {
+        const reader = new FileReader();
+        const selectedFile = this.fileUploadNode.files[0];
+        reader.onload = (file: { target: FileReader }) => {
+            try {
+                const stats = JSON.parse(file.target.result);
+                this.processUpload(stats);
+            } catch (err) {
+                this.showErrorWithCloseDelay(
+                    `An error occurred attempting to upload or parse "${selectedFile.name}".`
+                );
+                console.error(err);
+            }
+        };
+
+        reader.readAsText(selectedFile);
+    };
+
+    importFromURI = async () => {
+        try {
+            const stats = await getJSONFile(this.state.uri);
+            this.processUpload(stats);
+        } catch (err) {
+            this.showErrorWithCloseDelay(
+                `Failed to fetch file from ${this.state.uri}`
+            );
+            console.error(err);
+        }
+    };
+
+    startImport = () => {
+        this.state.uri ? this.importFromURI() : this.importLocalFile();
     };
 
     onRequestClose = () => {
@@ -30,29 +75,16 @@ export default class Upload extends Component {
         }
     }
 
+    updateURI = (e: SyntheticInputEvent) => {
+        this.setState({ uri: e.target.value });
+    };
+
     showErrorWithCloseDelay(message: string, msDelay?: number = 10000) {
         this.setState({ currentError: message });
         this.timeoutHandle = setTimeout(() => {
             this.setState({ currentError: '' });
-        });
+        }, msDelay);
     }
-
-    onFileChange = (e: { target: { files: Array<File> } }) => {
-        const reader = new FileReader();
-        const selectedFile = e.target.files[0];
-        reader.onload = (file: { target: FileReader }) => {
-            try {
-                const stats = JSON.parse(file.target.result);
-                this.props.onFileUpload(stats);
-            } catch (err) {
-                this.showErrorWithCloseDelay(
-                    `An error occurred attempting to upload or parse "${selectedFile.name}".`
-                );
-            }
-        };
-
-        reader.readAsText(selectedFile);
-    };
 
     renderError() {
         const styles = {
@@ -76,9 +108,9 @@ export default class Upload extends Component {
                 onTouchTap={this.onRequestClose}
             />,
             <FlatButton
-                label='Upload'
+                label='Process'
                 primary={true}
-                onTouchTap={this.processUpload}
+                onTouchTap={this.startImport}
             />
         ];
 
@@ -93,13 +125,25 @@ export default class Upload extends Component {
                 {this.state.currentError && this.renderError()}
                 <div>
                     <h4>Upload a local file</h4>
-                    <input type='file' onChange={this.onFileChange} />
+                    <input
+                        type='file'
+                        ref={node => this.fileUploadNode = node}
+                    />
                 </div>
 
                 <div>
                     <h4>Import a file from a URI</h4>
+                    <TextField
+                        onChange={this.updateURI}
+                        value={this.state.uri}
+                        hintText='https://www.site.com/stats.json'
+                    />
                 </div>
             </Dialog>
         );
     }
 }
+
+export default connect(null, (dispatch) => ({
+    onFileUpload: payload => dispatch(loadStats(payload))
+}))(Upload);
