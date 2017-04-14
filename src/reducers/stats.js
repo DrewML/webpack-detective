@@ -1,7 +1,6 @@
 // @flow
 import { type Stats } from '../types/webpack';
 import { type Action } from '../types/fsa';
-import payload from '../../stats';
 
 type StatsAction =
     Action<'LOAD_STATS', Stats> |
@@ -17,14 +16,20 @@ export const loadStats = (stats: Stats): StatsAction => ({
     payload: stats
 });
 
-const reducer = (state: ?Stats = null, action: StatsAction): ?Stats => {
+let initialState = null
+
+if (process.env.NODE_ENV !== 'production') {
+    initialState = require('../../stats');
+}
+
+const reducer = (state: ?Stats = initialState, action: StatsAction): ?Stats => {
     switch(action.type) {
         case 'LOAD_STATS':
             return action.payload;
         case 'PURGE_STATS':
             return null;
         default:
-            return payload; // TEMP
+            return state;
     }
 };
 

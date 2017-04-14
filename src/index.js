@@ -7,10 +7,12 @@ import { Provider as ReduxProvider } from 'react-redux';
 import AppRouter from './components/Router';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
+injectTapEventPlugin();
+
 ReactDOM.render(
     <ReduxProvider store={createStore(RootReducer)}>
         <AppRouter />
     </ReduxProvider>,
     document.querySelector('.root')
 );
-injectTapEventPlugin();
+

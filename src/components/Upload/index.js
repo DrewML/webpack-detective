@@ -6,12 +6,14 @@ import TextField from 'material-ui/TextField';
 import { browserHistory } from 'react-router';
 import { connect } from 'react-redux';
 import { loadStats } from '../../reducers/stats';
+import { uploadModalOpen } from '../../reducers/ui';
 import { getJSONFile } from '../../util/download';
 import type { Stats } from '../../types/webpack';
 
 class Upload extends Component {
     props: {|
         onFileUpload: (payload: Stats) => void;
+        onClose: Function;
     |};
 
     fileUploadNode: HTMLInputElement;
@@ -28,12 +30,14 @@ class Upload extends Component {
 
     processUpload = (stats: Stats) => {
         this.props.onFileUpload(stats);
-        browserHistory.push('/drilldown');
+        this.props.onClose();
     };
 
     importLocalFile = () => {
         const reader = new FileReader();
         const selectedFile = this.fileUploadNode.files[0];
+        if (!selectedFile) return;
+
         reader.onload = (file: { target: FileReader }) => {
             try {
                 const stats = JSON.parse(file.target.result);
@@ -49,16 +53,15 @@ class Upload extends Component {
         reader.readAsText(selectedFile);
     };
 
-    importFromURI = async () => {
-        try {
-            const stats = await getJSONFile(this.state.uri);
-            this.processUpload(stats);
-        } catch (err) {
-            this.showErrorWithCloseDelay(
-                `Failed to fetch file from ${this.state.uri}`
-            );
-            console.error(err);
-        }
+    importFromURI = () => {
+        getJSONFile(this.state.uri)
+            .then(this.processUpload)
+            .catch(err => {
+                this.showErrorWithCloseDelay(
+                    `Failed to fetch file from ${this.state.uri}`
+                );
+                console.error(err);
+            });
     };
 
     startImport = () => {
@@ -66,7 +69,7 @@ class Upload extends Component {
     };
 
     onRequestClose = () => {
-        browserHistory.push('/');
+        this.props.onClose();
     };
 
     componentWillUnmount() {
@@ -144,6 +147,7 @@ class Upload extends Component {
     }
 }
 
-export default connect(null, (dispatch) => ({
-    onFileUpload: payload => dispatch(loadStats(payload))
+export default connect(null, dispatch => ({
+    onClose: () => dispatch(uploadModalOpen(false)),
+    onFileUpload: payload => (dispatch(loadStats(payload)), dispatch(uploadModalOpen(false)))
 }))(Upload);

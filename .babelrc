@@ -2,7 +2,17 @@
     "presets": ["react"],
     "plugins": [
         "transform-class-properties",
-        "transform-object-rest-spread",
-        "transform-async-to-generator"
-    ]
+        "transform-object-rest-spread"
+    ],
+    "env": {
+        "production": {
+            // Need es2015 in prod because Uglify doesn't support
+            // anything beyond es5, and Babili is too buggy
+            "presets": ["react", "es2015"],
+            "plugins": [
+                "transform-class-properties",
+                "transform-object-rest-spread"
+            ]
+        }
+    }
 }

@@ -8,7 +8,18 @@ const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = () => {
     const config = {
-        entry: './src/index',
+        entry: {
+            main: './src/index',
+            vendor: [
+                'react',
+                'react-dom',
+                'material-ui',
+                'redux',
+                'react-redux',
+                'react-router',
+                'react-tap-event-plugin'
+            ],
+        },
         output: {
             path: join(__dirname, 'dist'),
             filename: '[name].js'
@@ -25,16 +36,33 @@ module.exports = () => {
             }]
         },
         plugins: [
-            new webpack.NamedModulesPlugin(),
             new HTMLWebpackPlugin({
                 title: 'webpack detective',
                 template: './src/index_template.ejs'
+            }),
+            new webpack.DefinePlugin({
+                'process.env': {
+                    NODE_ENV: `"${process.env.NODE_ENV}"`
+                }
+            }),
+            new webpack.optimize.CommonsChunkPlugin({
+                name: 'vendor',
+                minChunks: Infinity
             })
         ],
         devServer: {
             historyApiFallback: true
         }
     };
+
+    if (process.env.NODE_ENV !== 'production') {
+        config.plugins.push(new webpack.NamedModulesPlugin());
+    } else {
+        config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+            compress: true,
+            mangle: true
+        }));
+    }
 
     return config;
 };

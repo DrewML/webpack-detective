@@ -2,11 +2,6 @@
 import React, { Component } from 'react';
 import { Router, browserHistory, Route, IndexRedirect } from 'react-router';
 import App from '../App';
-import Upload from '../Upload';
-import Empty from '../Empty';
-import Drilldown from '../Drilldown';
-import Graphs from '../Graphs';
-import Timing from '../Timing';
 
 export default class AppRouter extends Component {
     render() {
@@ -15,13 +10,19 @@ export default class AppRouter extends Component {
                 history={browserHistory}
                 routes={
                     <Route path='/' component={App}>
-                        <IndexRedirect to='start' />
-                        <Route path='upload' component={Upload} />
-                        <Route path='start' component={Empty} />
-                        <Route path='drilldown' component={Drilldown} />
-                        <Route path='graphs' component={Graphs} />
-                        <Route path='start' component={Empty} />
-                        <Route path='timing' component={Timing} />
+                        <IndexRedirect to='drilldown' />
+                        <Route path='drilldown' getComponent={
+                            // $FlowFixMe: Add def for System.import
+                            () => System.import('../Drilldown').then(mod => mod.default)
+                        } />
+                        <Route path='graphs' getComponent={
+                            // $FlowFixMe: Add def for System.import
+                            () => System.import('../Graphs').then(mod => mod.default)
+                        } />
+                        <Route path='timing' getComponent={
+                            // $FlowFixMe: Add def for System.import
+                            () => System.import('../Timing').then(mod => mod.default)
+                        } />
                     </Route>
                 }
             />

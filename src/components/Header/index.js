@@ -6,9 +6,14 @@ import FlatButton from 'material-ui/FlatButton';
 import MenuIcon from 'material-ui/svg-icons/navigation/menu';
 import UploadIcon from 'material-ui/svg-icons/file/file-upload';
 import SideMenu from '../SideMenu';
-import { Link } from 'react-router';
+import { uploadModalOpen } from '../../reducers/ui';
+import { connect } from 'react-redux';
 
-export default class Header extends Component {
+class Header extends Component {
+    props: {|
+        onUploadFile: Function;
+    |};
+
     state: { drawerOpen: bool } = {
         drawerOpen: false
     };
@@ -30,7 +35,7 @@ export default class Header extends Component {
                     <FlatButton
                         label='Upload Stats'
                         icon={<UploadIcon />}
-                        containerElement={<Link to='/upload' />}
+                        onTouchTap={this.props.onUploadFile}
                     />
                 }
             >
@@ -41,3 +46,7 @@ export default class Header extends Component {
         );
     }
 }
+
+export default connect(null, dispatch => ({
+    onUploadFile: () => dispatch(uploadModalOpen(true))
+}))(Header);

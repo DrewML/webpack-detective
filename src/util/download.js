@@ -1,9 +1,8 @@
 // @flow
 
-export async function getJSONFile(uri: string) {
-    const res = await fetch(uri, {
+export function getJSONFile(uri: string) {
+    return fetch(uri, {
         mode: 'no-cache',
         mode: 'cors'
-    });
-    return res.json();
+    }).then(res => res.json());
 }
