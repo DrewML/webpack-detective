@@ -10,9 +10,9 @@ import { getJSONFile } from '../../util/download';
 import type { Stats } from '../../types/webpack';
 
 class Upload extends Component {
-    props: {
+    props: {|
         onFileUpload: (payload: Stats) => void;
-    };
+    |};
 
     fileUploadNode: HTMLInputElement;
 
@@ -28,7 +28,7 @@ class Upload extends Component {
 
     processUpload = (stats: Stats) => {
         this.props.onFileUpload(stats);
-        browserHistory.push('/');
+        browserHistory.push('/drilldown');
     };
 
     importLocalFile = () => {

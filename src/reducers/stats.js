@@ -1,6 +1,7 @@
 // @flow
 import { type Stats } from '../types/webpack';
 import { type Action } from '../types/fsa';
+import payload from '../../stats';
 
 type StatsAction =
     Action<'LOAD_STATS', Stats> |
@@ -23,7 +24,7 @@ const reducer = (state: ?Stats = null, action: StatsAction): ?Stats => {
         case 'PURGE_STATS':
             return null;
         default:
-            return state;
+            return payload; // TEMP
     }
 };
 
