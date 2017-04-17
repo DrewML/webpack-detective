@@ -3,20 +3,9 @@ import React, { Component } from 'react';
 import { type Stats, type Module } from '../../types/webpack';
 import { type RootState } from '../../reducers';
 import { connect } from 'react-redux';
-import SingleModule from './SingleModule';
 import ModuleDetails from './ModuleDetails';
-import List from 'react-virtualized/dist/es/List';
-import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
+import ModuleList from './ModuleList';
 import Splitplane from 'react-split-pane';
-import TextField from 'material-ui/TextField';
-
-type RowRendererArgs = {|
-    key: any;
-    index: number;
-    isScrolling: bool;
-    isVisible: bool;
-    style: Object;
-|};
 
 const resizerStyle = {
     background: 'rgb(0, 188, 212)',
@@ -57,19 +46,6 @@ class Drilldown extends Component {
         }
     }
 
-    rowRenderer = ({ key, index, style }: RowRendererArgs) => {
-        // $FlowFixMe: Flow _should_ be able to statically analyze that this can't be called because of the check in render()
-        const mod = this.props.stats.modules[index];
-        return (
-            <SingleModule
-                key={key}
-                mod={mod}
-                style={style}
-                onInspect={this.selectModule}
-            />
-        );
-    };
-
     render() {
         const { stats } = this.props;
         const { selectedModule } = this.state;
@@ -78,26 +54,17 @@ class Drilldown extends Component {
         return (
             <section style={blockStyles}>
                 <Splitplane
-                    defaultSize='35%'
+                    defaultSize='45%'
                     split='vertical'
                     style={blockStyles}
                     resizerStyle={resizerStyle}
                     paneStyle={blockStyles}
                 >
-                    <div style={blockStyles}>
-                        <TextField fullWidth={true} hintText='Search'/>
-                        <AutoSizer>
-                            {({ height, width }) =>
-                                <List
-                                    width={width}
-                                    height={height}
-                                    rowCount={stats.modules.length}
-                                    rowHeight={50}
-                                    rowRenderer={this.rowRenderer}
-                                />
-                            }
-                        </AutoSizer>
-                    </div>
+                    <ModuleList
+                        stats={stats}
+                        onSelectModule={this.selectModule}
+                        selectedModule={this.state.selectedModule}
+                    />
                     <div>
                         {selectedModule &&
                             <ModuleDetails mod={selectedModule} />
