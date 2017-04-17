@@ -33,6 +33,10 @@ module.exports = () => {
                     loader: 'babel-loader',
                     query: { cacheDirectory: true }
                 }
+            }, {
+                test: /\.css$/,
+                include: join(__dirname, 'node_modules/react-virtualized'),
+                use: ['style-loader', 'css-loader']
             }]
         },
         plugins: [

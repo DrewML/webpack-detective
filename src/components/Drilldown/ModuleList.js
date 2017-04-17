@@ -1,18 +1,17 @@
 // @flow
 import React, { Component } from 'react';
+import prettysize from 'prettysize';
 import SingleModule from './SingleModule';
-import List from 'react-virtualized/dist/es/List';
+import Table from 'react-virtualized/dist/es/Table/Table';
+import Column from 'react-virtualized/dist/es/Table/Column';
 import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import { type Stats, type Module } from '../../types/webpack';
 import TextField from 'material-ui/TextField';
 import SearchIcon from 'material-ui/svg-icons/action/search';
-import SortIcon from 'material-ui/svg-icons/content/sort';
-import IconMenu from 'material-ui/IconMenu';
-import IconButton from 'material-ui/IconButton';
-import MenuItem from 'material-ui/MenuItem';
 import debounce from 'lodash.debounce';
 import sortBy from 'lodash.sortby';
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
+import 'react-virtualized/styles.css';
 
 const blockStyles = {
     width: '100%',
@@ -104,39 +103,30 @@ export default class ModuleList extends Component {
                                 placeholder='Search'
                             />
                         </TextField>
-                        <ToolbarSeparator />
-                    </ToolbarGroup>
-                    <ToolbarGroup lastChild={true}>
-                        <ToolbarTitle text='Sort' />
-                        <IconMenu
-                            iconButtonElement={
-                                <IconButton>
-                                    <SortIcon />
-                                </IconButton>
-                            }
-                        >
-                            <MenuItem
-                                primaryText='Name'
-                                onTouchTap={this.setSortBy('name')}
-                                checked={this.state.by === 'name'}
-                            />
-                            <MenuItem
-                                primaryText='Size'
-                                onTouchTap={this.setSortBy('size')}
-                                checked={this.state.by === 'size'}
-                            />
-                        </IconMenu>
                     </ToolbarGroup>
                 </Toolbar>
                 <AutoSizer>
                     {({ height, width }) =>
-                        <List
+                        <Table
                             width={width}
                             height={height}
                             rowCount={this.state.modules.length}
-                            rowHeight={50}
-                            rowRenderer={this.rowRenderer}
-                        />
+                            rowHeight={40}
+                            headerHeight={30}
+                            rowGetter={({ index }) => this.state.modules[index]}
+                        >
+                            <Column
+                                label='Module Name'
+                                dataKey='name'
+                                width={700}
+                            />
+                            <Column
+                                label='Size'
+                                dataKey='size'
+                                width={70}
+                                cellDataGetter={({ rowData }) => prettysize(rowData.size)}
+                            />
+                        </Table>
                     }
                 </AutoSizer>
             </div>
