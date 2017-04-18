@@ -17,14 +17,22 @@ const blockStyles = {
     height: '100%'
 };
 
+type Props = {|
+    stats: ?Stats;
+|};
+
 class Drilldown extends Component {
-    props: {|
-        stats: ?Stats;
-    |};
+    props: Props;
 
     state: { selectedModule: ?Module } = {
         selectedModule: null
     };
+
+    componentWillReceiveProps(nextProps: Props) {
+        if (this.props.stats !== nextProps.stats) {
+            this.setState({ selectedModule: null });
+        }
+    }
 
     selectModule = (selectedModule: ?Module) => {
         this.setState({ selectedModule });

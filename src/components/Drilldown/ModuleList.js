@@ -8,6 +8,7 @@ import { type Stats, type Module } from '../../types/webpack';
 import TextField from 'material-ui/TextField';
 import SearchIcon from 'material-ui/svg-icons/action/search';
 import sortOn from 'sort-on';
+import Checkbox from 'material-ui/Checkbox';
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
 import 'react-virtualized/styles.css';
 
@@ -32,6 +33,7 @@ type State = {
     search: string;
     by: SortFields;
     dir: SortDirection;
+    useRegExp: bool;
 };
 type Props = {
     stats: Stats;
@@ -48,32 +50,37 @@ export default class ModuleList extends Component {
         modules: this.props.stats.modules,
         search: '',
         by: 'name',
-        dir: 'DESC'
+        dir: 'DESC',
+        useRegExp: false
     };
 
     componentWillMount() {
-        const { by, dir, search } = this.state;
-        this.sortAndFilter({ by, dir, search });
+        this.sortAndFilter();
     }
 
     componentWillReceiveProps({ stats: { modules } }: Props) {
-        const { by, dir, search } = this.state;
-        this.sortAndFilter({ by, dir, search, modules });
+        this.sortAndFilter({});
     }
 
     onSearch = (e: SyntheticInputEvent) => {
         const search = e.target.value;
         this.setState({ search });
-        const { by, dir } = this.state;
-        this.sortAndFilter({ by, dir, search });
+        this.sortAndFilter({ search });
     };
 
     onSort = ({ sortBy: by, sortDirection: dir }: { sortBy: SortFields; sortDirection: SortDirection; }) => {
         this.setState({ by, dir });
-        this.sortAndFilter({ by, dir, search: this.state.search });
+        this.sortAndFilter({ by, dir });
     }
 
-    sortAndFilter({ by, dir, search, modules = this.props.stats.modules }: { by: SortFields; dir: SortDirection; search: string; modules?: Array<Module> }) {
+    // This method is a _mess_. TODO: Cleanup massively. Yay late night coding!
+    sortAndFilter({
+        by = this.state.by,
+        dir = this.state.dir,
+        search = this.state.search,
+        useRegExp = this.state.useRegExp,
+        modules = this.props.stats.modules,
+    }: { by?: SortFields; dir?: SortDirection; search?: string; modules?: Array<Module>; useRegExp?: bool; } = {}) {
         // TODO: Consider debouncing if perf issues come up. Profiling on a large app,
         // a search + sort takes a max of 3ms, which is fine for now
         let result = modules;
@@ -81,7 +88,9 @@ export default class ModuleList extends Component {
         if (search) {
             // TODO: levenshtein distance or some fuzzy search lib
             result = modules.filter(
-                mod => mod.name.toLowerCase().includes(search.trim().toLowerCase())
+                mod => (useRegExp ?
+                    new RegExp(search, 'i').test(mod.name.toLocaleLowerCase()) :
+                    mod.name.toLowerCase().includes(search.toLowerCase()))
             );
         }
 
@@ -95,34 +104,43 @@ export default class ModuleList extends Component {
     onKeyUp = (e: SyntheticKeyboardEvent) => {
         if (e.key === 'Escape') {
             this.setState({ search: '' });
-            const { by, dir } = this.state;
-            this.sortAndFilter({ by, dir, search: '' });
+            this.sortAndFilter({ search: '' });
         }
+    };
+
+    onSelectRegEx = (e: SyntheticEvent, isChecked: bool) => {
+        this.setState({ useRegExp: isChecked });
+        this.sortAndFilter({ useRegExp: isChecked });
     };
 
     render() {
         const { stats } = this.props;
-        const { modules, by, dir, search } = this.state;
+        const { modules, by, dir, search, useRegExp } = this.state;
         return (
             <div style={blockStyles}>
-                <Toolbar>
-                    <ToolbarGroup firstChild={true}>
-                        <SearchIcon style={{ padding: '0 7px' }} />
-                        <TextField
-                            style={{ height: '100%' }}
+                <Toolbar style={{ paddingLeft: 0, alignItems: 'center' }}>
+                    <SearchIcon style={{ padding: '0 7px' }} />
+                    <TextField
+                        style={{ height: '100%', width: '100%' }}
+                        placeholder='Search'
+                        underlineStyle={{ display: 'none' }}
+                        id='material-ui-requires-this'
+                    >
+                        <input
+                            style={{ width: '100%' }}
+                            type='text'
+                            onChange={this.onSearch}
+                            onKeyUp={this.onKeyUp}
                             placeholder='Search'
-                            underlineStyle={{ display: 'none' }}
-                            id='material-ui-requires-this'
-                        >
-                            <input
-                                type='text'
-                                onChange={this.onSearch}
-                                onKeyUp={this.onKeyUp}
-                                placeholder='Search'
-                                value={search}
-                            />
-                        </TextField>
-                    </ToolbarGroup>
+                            value={search}
+                        />
+                    </TextField>
+                    <Checkbox
+                        label='RegExp'
+                        checked={useRegExp}
+                        onCheck={this.onSelectRegEx}
+                        style={{ width: '100px' }}
+                    />
                 </Toolbar>
                 <AutoSizer>
                     {({ height, width }) =>

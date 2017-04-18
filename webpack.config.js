@@ -13,7 +13,6 @@ module.exports = () => {
             vendor: [
                 'react',
                 'react-dom',
-                'material-ui',
                 'redux',
                 'react-redux',
                 'react-router',
@@ -28,7 +27,11 @@ module.exports = () => {
         module: {
             rules: [{
                 test: /\.js$/,
-                include: join(__dirname, 'src'),
+                include: [
+                    join(__dirname, 'src'),
+                    require.resolve('sort-on'),
+                    require.resolve('dot-prop')
+                ],
                 use: {
                     loader: 'babel-loader',
                     query: { cacheDirectory: true }
