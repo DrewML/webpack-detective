@@ -37,7 +37,7 @@ type State = {
 };
 type Props = {
     stats: Stats;
-    selectedModule: ?Module;
+    selectedModules: Array<Module>;
     onSelectModule: (mod: Module) => void;
 };
 type SortDirection = 'ASC' | 'DESC';
@@ -113,6 +113,10 @@ export default class ModuleList extends Component {
         this.sortAndFilter({ useRegExp: isChecked });
     };
 
+    onSelectModule = ({ rowData }: { rowData: Module }) => {
+        this.props.onSelectModule(rowData);
+    };
+
     render() {
         const { stats } = this.props;
         const { modules, by, dir, search, useRegExp } = this.state;
@@ -145,16 +149,17 @@ export default class ModuleList extends Component {
                 <AutoSizer>
                     {({ height, width }) =>
                         <Table
+                            onRowClick={this.onSelectModule}
                             rowStyle={rowStyle}
                             width={width}
                             height={height}
-                            rowCount={this.state.modules.length}
+                            rowCount={modules.length}
                             sort={this.onSort}
                             sortBy={by}
                             sortDirection={dir}
                             rowHeight={40}
                             headerHeight={30}
-                            rowGetter={({ index }) => this.state.modules[index]}
+                            rowGetter={({ index }) => modules[index]}
                         >
                             <Column
                                 label='Module Name'

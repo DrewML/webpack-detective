@@ -24,6 +24,13 @@ module.exports = () => {
             filename: '[name].js'
         },
         devtool: isProd ? 'source-map' : 'eval-source-map',
+        resolve: {
+            alias: {
+                // Both copies in the bundle suck. Force all libs to just bundle one
+                // (the non-deprecated one)
+                './ReactClass': 'create-react-class/factory'
+            }
+        },
         module: {
             rules: [{
                 test: /\.js$/,

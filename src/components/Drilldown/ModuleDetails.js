@@ -5,7 +5,7 @@ import { type Module } from '../../types/webpack';
 
 export default class ModuleDetails extends Component {
     props: {|
-        mod: Module;
+        modules: Array<Module>;
     |};
 
     render() {

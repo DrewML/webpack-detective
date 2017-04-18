@@ -21,21 +21,32 @@ type Props = {|
     stats: ?Stats;
 |};
 
+type State = {
+    selectedModules: Array<Module>;
+};
+
 class Drilldown extends Component {
     props: Props;
 
-    state: { selectedModule: ?Module } = {
-        selectedModule: null
+    state: State = {
+        selectedModules: []
     };
 
     componentWillReceiveProps(nextProps: Props) {
         if (this.props.stats !== nextProps.stats) {
-            this.setState({ selectedModule: null });
+            this.setState({ selectedModules: [] });
         }
     }
 
-    selectModule = (selectedModule: ?Module) => {
-        this.setState({ selectedModule });
+    selectModule = (selectedModule: Module) => {
+        this.setState((prevState: State) => {
+            return {
+                selectedModules: [
+                    ...prevState.selectedModules,
+                    selectedModule
+                ]
+            };
+        });
     };
 
     componentWillMount() {
@@ -50,13 +61,13 @@ class Drilldown extends Component {
         }
 
         if (!stats) {
-            this.selectModule(null);
+            this.setState({ selectedModules: [] });
         }
     }
 
     render() {
         const { stats } = this.props;
-        const { selectedModule } = this.state;
+        const { selectedModules } = this.state;
         if (!stats) return <div>No stats</div>;
 
         return (
@@ -71,11 +82,11 @@ class Drilldown extends Component {
                     <ModuleList
                         stats={stats}
                         onSelectModule={this.selectModule}
-                        selectedModule={this.state.selectedModule}
+                        selectedModules={selectedModules}
                     />
                     <div>
-                        {selectedModule &&
-                            <ModuleDetails mod={selectedModule} />
+                        {selectedModules &&
+                            <ModuleDetails modules={selectedModules} />
                         }
                     </div>
                 </Splitplane>
