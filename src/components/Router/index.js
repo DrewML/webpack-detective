@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import { Router, browserHistory, Route, IndexRedirect } from 'react-router';
 import App from '../App';
 
+// TODO: Swap `System.import` for `import()` when flow
+// adds parser support
 export default class AppRouter extends Component {
     render() {
         return (

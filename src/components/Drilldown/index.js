@@ -54,7 +54,7 @@ class Drilldown extends Component {
         return (
             <section style={blockStyles}>
                 <Splitplane
-                    defaultSize='45%'
+                    defaultSize='35%'
                     split='vertical'
                     style={blockStyles}
                     resizerStyle={resizerStyle}
