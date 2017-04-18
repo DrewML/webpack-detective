@@ -26,7 +26,6 @@
     "webpack-dev-server": "^2.4.2"
   },
   "dependencies": {
-    "lodash.sortby": "^4.7.0",
     "material-ui": "^0.17.3",
     "prettysize": "^0.1.0",
     "react": "^15.5.4",
@@ -36,6 +35,7 @@
     "react-split-pane": "^0.1.61",
     "react-tap-event-plugin": "^2.0.1",
     "react-virtualized": "^9.7.3",
-    "redux": "^3.6.0"
+    "redux": "^3.6.0",
+    "sort-on": "^2.0.0"
   }
 }

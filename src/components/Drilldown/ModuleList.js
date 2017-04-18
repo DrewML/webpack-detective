@@ -7,7 +7,7 @@ import AutoSizer from 'react-virtualized/dist/es/AutoSizer';
 import { type Stats, type Module } from '../../types/webpack';
 import TextField from 'material-ui/TextField';
 import SearchIcon from 'material-ui/svg-icons/action/search';
-import sortBy from 'lodash.sortby';
+import sortOn from 'sort-on';
 import { Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle } from 'material-ui/Toolbar';
 import 'react-virtualized/styles.css';
 
@@ -85,7 +85,7 @@ export default class ModuleList extends Component {
             );
         }
 
-        result = sortBy(result, [by]);
+        result = sortOn(result, by);
 
         this.setState({
             modules: dir === 'ASC' ? result.reverse() : result
