@@ -74,8 +74,13 @@ module.exports = () => {
     } else {
         config.plugins.push(new webpack.optimize.UglifyJsPlugin({
             compress: true,
-            mangle: true
+            mangle: true,
+            sourceMap: true
         }));
+        config.module.rules.push({
+            test: /redux-loger/,
+            use: 'null-loader'
+        })
     }
 
     return config;

@@ -29,16 +29,17 @@ type RowRendererArgs = {|
     style: Object;
 |};
 type State = {
-    modules: Array<Module>;
+    sortedModuleIds: ?Array<number>;
     search: string;
     by: SortFields;
     dir: SortDirection;
     useRegExp: bool;
 };
 type Props = {
-    stats: Stats;
-    selectedModules: Array<Module>;
-    onSelectModule: (mod: Module) => void;
+    modules: Map<number, Module>;
+    moduleIds: Array<number>;
+    selectedModuleIds: Set<number>;
+    onSelectModule: (moduleId: number) => void;
 };
 type SortDirection = 'ASC' | 'DESC';
 type SortFields = 'name' | 'size';
@@ -47,7 +48,7 @@ export default class ModuleList extends Component {
     props: Props;
 
     state: State = {
-        modules: this.props.stats.modules,
+        sortedModuleIds: undefined,
         search: '',
         by: 'name',
         dir: 'DESC',
@@ -58,8 +59,8 @@ export default class ModuleList extends Component {
         this.sortAndFilter();
     }
 
-    componentWillReceiveProps({ stats: { modules } }: Props) {
-        this.sortAndFilter({});
+    componentWillReceiveProps(nextProps: Props) {
+        this.sortAndFilter();
     }
 
     onSearch = (e: SyntheticInputEvent) => {
@@ -79,25 +80,28 @@ export default class ModuleList extends Component {
         dir = this.state.dir,
         search = this.state.search,
         useRegExp = this.state.useRegExp,
-        modules = this.props.stats.modules,
-    }: { by?: SortFields; dir?: SortDirection; search?: string; modules?: Array<Module>; useRegExp?: bool; } = {}) {
+    }: { by?: SortFields; dir?: SortDirection; search?: string; useRegExp?: bool; } = {}) {
         // TODO: Consider debouncing if perf issues come up. Profiling on a large app,
         // a search + sort takes a max of 3ms, which is fine for now
-        let result = modules;
+        const { modules, moduleIds } = this.props;
+        let sortedModuleIds = moduleIds;
 
         if (search) {
             // TODO: levenshtein distance or some fuzzy search lib
-            result = modules.filter(
-                mod => (useRegExp ?
-                    new RegExp(search, 'i').test(mod.name.toLocaleLowerCase()) :
-                    mod.name.toLowerCase().includes(search.toLowerCase()))
+            sortedModuleIds = moduleIds.filter(
+                id => (useRegExp ?
+                    // $FlowFixMe
+                    new RegExp(search, 'i').test(modules.get(id).name.toLocaleLowerCase()) :
+                    // $FlowFixMe
+                    modules.get(id).name.toLowerCase().includes(search.toLowerCase()))
             );
         }
 
-        result = sortOn(result, by);
+        // $FlowFixMe
+        sortedModuleIds = sortOn(sortedModuleIds, id => modules.get(id)[by]);
 
         this.setState({
-            modules: dir === 'ASC' ? result.reverse() : result
+            sortedModuleIds: dir === 'ASC' ? sortedModuleIds.reverse() : sortedModuleIds
         });
     }
 
@@ -114,12 +118,13 @@ export default class ModuleList extends Component {
     };
 
     onSelectModule = ({ rowData }: { rowData: Module }) => {
-        this.props.onSelectModule(rowData);
+        this.props.onSelectModule(rowData.id);
     };
 
     render() {
-        const { stats } = this.props;
-        const { modules, by, dir, search, useRegExp } = this.state;
+        const { sortedModuleIds, by, dir, search, useRegExp } = this.state;
+        const { modules } = this.props;
+
         return (
             <div style={blockStyles}>
                 <Toolbar style={{ paddingLeft: 0, alignItems: 'center' }}>
@@ -153,13 +158,15 @@ export default class ModuleList extends Component {
                             rowStyle={rowStyle}
                             width={width}
                             height={height}
-                            rowCount={modules.length}
+                            // $FlowFixMe
+                            rowCount={sortedModuleIds.length}
                             sort={this.onSort}
                             sortBy={by}
                             sortDirection={dir}
                             rowHeight={40}
                             headerHeight={30}
-                            rowGetter={({ index }) => modules[index]}
+                            // $FlowFixMe
+                            rowGetter={({ index }) => modules.get(sortedModuleIds[index])}
                         >
                             <Column
                                 label='Module Name'

@@ -1,5 +1,5 @@
 // @flow
-import { type Stats } from '../types/webpack';
+import { type Stats, type Module } from '../types/webpack';
 import { type Action } from '../types/fsa';
 
 type StatsAction =
@@ -16,21 +16,35 @@ export const loadStats = (stats: Stats): StatsAction => ({
     payload: stats
 });
 
-let initialState = null
+export type StatsState = {|
+    modules: Map<number, Module>;
+    moduleIds: Array<number>;
+|};
 
-if (process.env.NODE_ENV !== 'production') {
-    initialState = require('../../stats');
-}
+const initialState = {
+    modules: new Map(),
+    moduleIds: []
+};
 
-const reducer = (state: ?Stats = initialState, action: StatsAction): ?Stats => {
+const reducer = (state: StatsState = initialState, action: StatsAction): StatsState => {
     switch(action.type) {
         case 'LOAD_STATS':
-            return action.payload;
+            const modules = buildMap(action.payload.modules);
+            return {
+                modules,
+                moduleIds: Array.from(modules.keys())
+            };
         case 'PURGE_STATS':
-            return null;
+            return initialState;
         default:
             return state;
     }
 };
+
+function buildMap(modules: Array<Module>): Map<number, Module> {
+    return modules.reduce((map, mod) => {
+        return map.set(mod.id, mod);
+    }, new Map());
+}
 
 export default reducer;

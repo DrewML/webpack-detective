@@ -8,7 +8,7 @@ export type Asset = {
 };
 
 export type Module = {
-    id: string;
+    id: number;
     identifier: string;
     name: string;
     index: number;

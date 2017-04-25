@@ -18,57 +18,55 @@ const blockStyles = {
 };
 
 type Props = {|
-    stats: ?Stats;
+    modules: Map<number, Module>;
+    moduleIds: Array<number>;
 |};
 
 type State = {
-    selectedModules: Array<Module>;
+    selectedModuleIds: Set<number>;
 };
 
 class Drilldown extends Component {
     props: Props;
 
     state: State = {
-        selectedModules: []
+        selectedModuleIds: new Set()
     };
 
     componentWillReceiveProps(nextProps: Props) {
-        if (this.props.stats !== nextProps.stats) {
-            this.setState({ selectedModules: [] });
+        if (this.props.modules !== nextProps.modules) {
+            this.setState({ selectedModuleIds: new Set() });
         }
     }
 
-    selectModule = (selectedModule: Module) => {
+    selectModules = (...moduleIds: Array<number>) => {
         this.setState((prevState: State) => {
             return {
-                selectedModules: [
-                    ...prevState.selectedModules,
-                    selectedModule
-                ]
+                selectedModuleIds: new Set([
+                    ...prevState.selectedModuleIds,
+                    ...moduleIds
+                ])
             };
         });
     };
 
-    componentWillMount() {
-        if (this.props.stats) {
-            this.selectModule(this.props.stats.modules[0]);
+    componentWillReceiveProps({ modules, moduleIds }) {
+        if (modules !== this.props.modules) {
+            // Reset selected if new modules have been received, to prevent referencing stale data
+            this.setState({ selectedModuleIds: new Set() });
         }
     }
 
-    componentWillReceiveProps({ stats }) {
-        if (stats && stats !== this.props.stats) {
-            this.selectModule(stats.modules[0]);
-        }
-
-        if (!stats) {
-            this.setState({ selectedModules: [] });
-        }
+    getSelectedModules() {
+        return Array.from(this.state.selectedModuleIds).map(
+            // $FlowFixMe
+            id => this.props.modules.get(id)
+        );
     }
 
     render() {
-        const { stats } = this.props;
-        const { selectedModules } = this.state;
-        if (!stats) return <div>No stats</div>;
+        const { modules, moduleIds } = this.props;
+        const { selectedModuleIds } = this.state;
 
         return (
             <section style={blockStyles}>
@@ -80,13 +78,14 @@ class Drilldown extends Component {
                     paneStyle={blockStyles}
                 >
                     <ModuleList
-                        stats={stats}
-                        onSelectModule={this.selectModule}
-                        selectedModules={selectedModules}
+                        modules={modules}
+                        moduleIds={moduleIds}
+                        onSelectModule={this.selectModules}
+                        selectedModuleIds={selectedModuleIds}
                     />
                     <div>
-                        {selectedModules &&
-                            <ModuleDetails modules={selectedModules} />
+                        {selectedModuleIds.length &&
+                            <ModuleDetails modules={this.getSelectedModules()} />
                         }
                     </div>
                 </Splitplane>
@@ -95,6 +94,7 @@ class Drilldown extends Component {
     }
 }
 
-export default connect((state: RootState) => ({
-    stats: state.stats
+export default connect(({ stats }: RootState) => ({
+    modules: stats.modules,
+    moduleIds: stats.moduleIds
 }), null)(Drilldown);
