@@ -19,7 +19,7 @@ const blockStyles = {
 const rowStyle = {
     borderBottom: '1px solid rgba(3, 101, 113, 0.2)',
     fontSize: '14px'
-}
+};
 
 type RowRendererArgs = {|
     key: any;
@@ -29,7 +29,7 @@ type RowRendererArgs = {|
     style: Object;
 |};
 type State = {
-    sortedModuleIds: ?Array<number>;
+    sortedModuleIds: Array<number>;
     search: string;
     by: SortFields;
     dir: SortDirection;
@@ -48,7 +48,7 @@ export default class ModuleList extends Component {
     props: Props;
 
     state: State = {
-        sortedModuleIds: undefined,
+        sortedModuleIds: [],
         search: '',
         by: 'name',
         dir: 'DESC',
@@ -121,6 +121,22 @@ export default class ModuleList extends Component {
         this.props.onSelectModule(rowData.id);
     };
 
+    getRowStyle = ({ index }: { index: number }) => {
+        const { selectedModuleIds } = this.props;
+        const { sortedModuleIds } = this.state;
+
+        const currentModuleId = sortedModuleIds[index];
+        if (selectedModuleIds.has(currentModuleId)) {
+            return {
+                ...rowStyle,
+                background: 'rgb(3, 115, 130)',
+                color: '#fff'
+            };
+        }
+
+        return rowStyle;
+    };
+
     render() {
         const { sortedModuleIds, by, dir, search, useRegExp } = this.state;
         const { modules } = this.props;
@@ -155,17 +171,15 @@ export default class ModuleList extends Component {
                     {({ height, width }) =>
                         <Table
                             onRowClick={this.onSelectModule}
-                            rowStyle={rowStyle}
+                            rowStyle={this.getRowStyle}
                             width={width}
                             height={height}
-                            // $FlowFixMe
                             rowCount={sortedModuleIds.length}
                             sort={this.onSort}
                             sortBy={by}
                             sortDirection={dir}
                             rowHeight={40}
                             headerHeight={30}
-                            // $FlowFixMe
                             rowGetter={({ index }) => modules.get(sortedModuleIds[index])}
                         >
                             <Column

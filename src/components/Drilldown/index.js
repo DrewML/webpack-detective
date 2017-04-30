@@ -39,13 +39,14 @@ class Drilldown extends Component {
         }
     }
 
-    selectModules = (...moduleIds: Array<number>) => {
-        this.setState((prevState: State) => {
+    selectModule = (moduleId: number) => {
+        this.setState(({ selectedModuleIds, ...rest }: State) => {
+            const isSelected = selectedModuleIds.has(moduleId);
             return {
-                selectedModuleIds: new Set([
-                    ...prevState.selectedModuleIds,
-                    ...moduleIds
-                ])
+                ...rest,
+                selectedModuleIds: isSelected ?
+                    selectedModuleIds.delete(moduleId) && selectedModuleIds :
+                    selectedModuleIds.add(moduleId)
             };
         });
     };
@@ -80,12 +81,16 @@ class Drilldown extends Component {
                     <ModuleList
                         modules={modules}
                         moduleIds={moduleIds}
-                        onSelectModule={this.selectModules}
+                        onSelectModule={this.selectModule}
                         selectedModuleIds={selectedModuleIds}
                     />
-                    <div>
-                        {selectedModuleIds.length &&
-                            <ModuleDetails modules={this.getSelectedModules()} />
+                    <div style={{ height: '100%' }}>
+                        {selectedModuleIds.size ?
+                            <ModuleDetails
+                                modules={this.getSelectedModules()}
+                                onClose={this.selectModule}
+                            /> :
+                            <div>Select a module</div>
                         }
                     </div>
                 </Splitplane>
